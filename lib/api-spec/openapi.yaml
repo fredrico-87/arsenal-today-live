@@ -3,20 +3,30 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Arsenaltodaylive API — Arsenal FC fan platform
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: matches
+    description: Match fixtures and results
+  - name: streams
+    description: Live stream links
+  - name: news
+    description: News articles and transfer news
+  - name: posts
+    description: Fan community posts
+  - name: summary
+    description: Dashboard summary data
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +34,268 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /matches:
+    get:
+      operationId: listMatches
+      tags: [matches]
+      summary: List all matches
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [upcoming, recent, all]
+      responses:
+        "200":
+          description: List of matches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Match"
+    post:
+      operationId: createMatch
+      tags: [matches]
+      summary: Create a match
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatchInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Match"
+
+  /matches/{id}:
+    get:
+      operationId: getMatch
+      tags: [matches]
+      summary: Get a match by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Match
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Match"
+        "404":
+          description: Not found
+
+  /streams:
+    get:
+      operationId: listStreams
+      tags: [streams]
+      summary: List all streams
+      responses:
+        "200":
+          description: List of streams
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Stream"
+    post:
+      operationId: createStream
+      tags: [streams]
+      summary: Create a stream
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StreamInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Stream"
+
+  /streams/{id}:
+    delete:
+      operationId: deleteStream
+      tags: [streams]
+      summary: Delete a stream
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /news:
+    get:
+      operationId: listNews
+      tags: [news]
+      summary: List news articles
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [transfer, match_preview, match_report, general]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of articles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Article"
+    post:
+      operationId: createArticle
+      tags: [news]
+      summary: Create a news article
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArticleInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Article"
+
+  /news/{id}:
+    get:
+      operationId: getArticle
+      tags: [news]
+      summary: Get article by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Article
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Article"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteArticle
+      tags: [news]
+      summary: Delete an article
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /posts:
+    get:
+      operationId: listPosts
+      tags: [posts]
+      summary: List fan community posts
+      responses:
+        "200":
+          description: List of posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+    post:
+      operationId: createPost
+      tags: [posts]
+      summary: Create a fan post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+
+  /posts/{id}/like:
+    post:
+      operationId: likePost
+      tags: [posts]
+      summary: Like a fan post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+
+  /summary:
+    get:
+      operationId: getSummary
+      tags: [summary]
+      summary: Get platform summary stats
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Summary"
+
+  /next-match:
+    get:
+      operationId: getNextMatch
+      tags: [matches]
+      summary: Get the next upcoming Arsenal match
+      responses:
+        "200":
+          description: Next match
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Match"
+        "404":
+          description: No upcoming match
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +306,163 @@ components:
       required:
         - status
 
+    Match:
+      type: object
+      required: [id, opponent, date, competition, isHome, status]
+      properties:
+        id:
+          type: integer
+        opponent:
+          type: string
+        date:
+          type: string
+        competition:
+          type: string
+        venue:
+          type: ["string", "null"]
+        isHome:
+          type: boolean
+        status:
+          type: string
+          enum: [upcoming, live, completed]
+        arsenalScore:
+          type: ["integer", "null"]
+        opponentScore:
+          type: ["integer", "null"]
+        streamUrl:
+          type: ["string", "null"]
+
+    MatchInput:
+      type: object
+      required: [opponent, date, competition, isHome, status]
+      properties:
+        opponent:
+          type: string
+        date:
+          type: string
+        competition:
+          type: string
+        venue:
+          type: string
+        isHome:
+          type: boolean
+        status:
+          type: string
+          enum: [upcoming, live, completed]
+        arsenalScore:
+          type: integer
+        opponentScore:
+          type: integer
+        streamUrl:
+          type: string
+
+    Stream:
+      type: object
+      required: [id, title, url, isLive]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        url:
+          type: string
+        isLive:
+          type: boolean
+        matchId:
+          type: ["integer", "null"]
+        thumbnailUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    StreamInput:
+      type: object
+      required: [title, url, isLive]
+      properties:
+        title:
+          type: string
+        url:
+          type: string
+        isLive:
+          type: boolean
+        matchId:
+          type: integer
+        thumbnailUrl:
+          type: string
+
+    Article:
+      type: object
+      required: [id, title, content, category, publishedAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        excerpt:
+          type: ["string", "null"]
+        category:
+          type: string
+          enum: [transfer, match_preview, match_report, general]
+        imageUrl:
+          type: ["string", "null"]
+        publishedAt:
+          type: string
+
+    ArticleInput:
+      type: object
+      required: [title, content, category]
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        excerpt:
+          type: string
+        category:
+          type: string
+          enum: [transfer, match_preview, match_report, general]
+        imageUrl:
+          type: string
+
+    Post:
+      type: object
+      required: [id, author, content, likes, createdAt]
+      properties:
+        id:
+          type: integer
+        author:
+          type: string
+        content:
+          type: string
+        likes:
+          type: integer
+        createdAt:
+          type: string
+
+    PostInput:
+      type: object
+      required: [author, content]
+      properties:
+        author:
+          type: string
+        content:
+          type: string
+
+    Summary:
+      type: object
+      required: [totalMatches, upcomingMatches, totalNews, totalPosts, liveStreams]
+      properties:
+        totalMatches:
+          type: integer
+        upcomingMatches:
+          type: integer
+        totalNews:
+          type: integer
+        totalPosts:
+          type: integer
+        liveStreams:
+          type: integer
+        lastResult:
+          type: ["string", "null"]
